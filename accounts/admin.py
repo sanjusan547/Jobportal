@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User,Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview
+from .models import User,Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp
 
 class CustomUserAdmin(UserAdmin):
     model = User
@@ -33,5 +33,6 @@ admin.site.register(Application)
 admin.site.register(Savedjob)
 admin.site.register(Companyprofile)
 admin.site.register(Companyreview)
+admin.site.register(Globalotp)
 
 

@@ -5,6 +5,7 @@ from .manager import CustomUserManager
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 class RoleEnum(enum.Enum):
     JOBSEEKER = 'jobseeker'
     EMPLOYER = 'employer'
@@ -128,4 +129,10 @@ class Companyreview(models.Model):
 
     def __str__(self):
         return f"{self.company} - {self.reviewer} - {self.rating}"
+    
+class Globalotp(models.Model):
+    otp=models.CharField(max_length=100)
+    created_at=models.DateTimeField(default=timezone.now)
 
+    def __str__(self):
+        return f"otp:{self.otp} at {self.created_at}"
