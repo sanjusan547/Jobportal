@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import AccountHome,Registerapi,Logoutview,Savejobview,Unsavejobview,Savedjoblistview
+from .views import AccountHome,Registerapi,Logoutview,Savejobview,Unsavejobview,Savedjoblistview,reset_password
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -54,5 +54,6 @@ urlpatterns = [
     path('api/company/my/reviews/<int:pk>/reply/', Companyreviewreplyview.as_view(), name='company-review-reply'),
     path('api/company/review/create/', Companyreviewcreateview.as_view(), name='company-review-create'),
     path('api/company/<int:company_id>/reviews/', Publiccompanyreviewlist.as_view(), name='company-review-list'),
+    path('api/resetpassword/',reset_password,name='reset-password'),
     path('api/',include(router.urls))
 ]

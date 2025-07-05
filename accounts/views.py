@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
-from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview
+from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,User
 from .serializers import(
      Jobseekerserializer,
      Employerserializer,
@@ -25,10 +25,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsEmployerOfJob
 from rest_framework.exceptions import PermissionDenied
 from django.utils import timezone
-
-
-
-
+from rest_framework.decorators import api_view,permission_classes
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+from datetime import timedelta
 
 
 
@@ -233,6 +233,38 @@ class Companyreviewreplyview(generics.UpdateAPIView):
         if review.company.employer != user:
             raise PermissionDenied("You can only reply to reviews on your own company")
         serializer.save(reply_at=timezone.now())
+
+user= get_user_model
+@api_view(['POST'])
+@permission_classes([])
+
+def reset_password(request):
+    email=request.data.get('email')
+    otp=request.data.get('otp')
+    new_password=request.data.get('new_password')
+
+    if not all([email,otp,new_password]):
+        return Response({'error':'All fields are mandatory'},status=status.HTTP_400_BAD_REQUEST)
+    try:
+        global_otp=Globalotp.objects.latest('created_at')
+        print("Entered OTP:", otp)
+        print("Stored OTP:", global_otp.otp)
+        if otp != global_otp.otp:
+            return Response({'error':"invalid otp"},status=status.HTTP_400_BAD_REQUEST)
+        if timezone.now() - global_otp.created_at > timedelta(days=2):
+            return Response({"error":"otp expired"},status=status.HTTP_400_BAD_REQUEST)
+    
+        user=User.objects.get(email=email)
+        user.password=make_password(new_password)
+        user.save()
+
+        return Response({"message":"password reset successfully"},status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error":"No user found"},status=status.HTTP_404_NOT_FOUND)
+    except Globalotp.DoesNotExist:
+        return Response({"error":"No otp configured"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+   
+
 
 
 
