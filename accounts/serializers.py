@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User
 from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview
+from.utils import send_notification_mail
 
 class Register(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -43,7 +44,34 @@ class Applicationserializer(serializers.ModelSerializer):
         user = self.context['request'].user
         validated_data['seeker'] = user
         return super().create(validated_data)
-     
+
+     def update(self, instance, validated_data):
+          
+          oldstatus=instance.status
+          new_status=validated_data.get('status',oldstatus)
+          instance = super().update(instance, validated_data)
+
+        # If status changed, send email
+          if oldstatus != new_status:
+              self.send_status_email(instance)
+
+          return instance
+     def send_status_email(self, application):
+        status = application.status
+        job_title = application.job.title
+        first_name = application.seeker.fullname
+        to_email = application.seeker.email
+
+        if status == 'rejected':
+          subject = f"Application Rejected - {job_title}"
+          message = f"Dear {first_name},\n\nWe regret to inform you that your application for '{job_title}' was not selected."
+        elif status == 'shortlisted':
+          subject = f"You've Been Shortlisted - {job_title}"
+          message = f"Dear {first_name},\n\nGood news! You’ve been shortlisted for the job '{job_title}'. We'll contact you with next steps."
+        else:
+          return  # No email for other statuses
+        send_notification_mail(subject, message, to_email)
+
      def validate(self, data):
           user=self.context['request'].user
           job=data.get('job')
