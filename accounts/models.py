@@ -85,7 +85,7 @@ class Application(models.Model):
         ('shortlisted', 'Shortlisted'),
         ('rejected', 'Rejected'),('seen','Seen')
     ]
-    status=models.CharField(max_length=20, choices=STATUS_CHOICES,)
+    status=models.CharField(max_length=20, choices=STATUS_CHOICES,default='pending')
     
     class Meta:
         unique_together=('seeker','job')

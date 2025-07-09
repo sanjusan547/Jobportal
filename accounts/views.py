@@ -29,6 +29,8 @@ from rest_framework.decorators import api_view,permission_classes
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from datetime import timedelta
+from .utils import send_notification_mail
+
 
 
 
@@ -107,6 +109,15 @@ class Applicationcreateview(generics.CreateAPIView):
     queryset=Application.objects.all()
     serializer_class=Applicationserializer
     permission_classes=[permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        application = serializer.save(seeker=self.request.user)
+
+        # Send email after saving
+        subject = 'Application Received'
+        message = f"Dear {self.request.user.fullname},\n\nYour application for the job '{application.job.title}' has been received.\n\nThank you!"
+        send_notification_mail(subject, message, self.request.user.email)
+
 class Applicationlistview(generics.ListAPIView):
     serializer_class=Applicationserializer             #serializer class tells views which serializer will use
     permission_classes=[permissions.IsAuthenticated]
@@ -247,8 +258,6 @@ def reset_password(request):
         return Response({'error':'All fields are mandatory'},status=status.HTTP_400_BAD_REQUEST)
     try:
         global_otp=Globalotp.objects.latest('created_at')
-        print("Entered OTP:", otp)
-        print("Stored OTP:", global_otp.otp)
         if otp != global_otp.otp:
             return Response({'error':"invalid otp"},status=status.HTTP_400_BAD_REQUEST)
         if timezone.now() - global_otp.created_at > timedelta(days=2):
@@ -263,9 +272,6 @@ def reset_password(request):
         return Response({"error":"No user found"},status=status.HTTP_404_NOT_FOUND)
     except Globalotp.DoesNotExist:
         return Response({"error":"No otp configured"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-   
-
-
 
 
 

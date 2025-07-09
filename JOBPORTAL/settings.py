@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'accounts',
+    'django_filters',
 
 ]
 
@@ -154,3 +155,11 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
 }
+
+EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_PORT=587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'poppysayana@gmail.com'
+EMAIL_HOST_PASSWORD = 'kxkzphzxpbrxwwrn'  # Use an App Password for Gmail
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
