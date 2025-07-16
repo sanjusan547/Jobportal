@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
-from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,User
+from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,User,Employerreview
 from .serializers import(
      Jobseekerserializer,
      Employerserializer,
@@ -16,7 +16,8 @@ from .serializers import(
      Savedjobserializer,
      Companyprofileserializer,
      Companyreviewserializer,
-     Companyreviewreplyserializer
+     Companyreviewreplyserializer,
+     Employerreviewserializer
 )
 from rest_framework import viewsets,permissions,generics,filters
 from.filters import Jobfilter
@@ -30,6 +31,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from datetime import timedelta
 from .utils import send_notification_mail
+from drf_yasg.utils import swagger_auto_schema
 
 
 
@@ -97,8 +99,8 @@ class Joblistview(generics.ListAPIView):
     permission_classes=[permissions.AllowAny]
     filter_backends=[DjangoFilterBackend,filters.SearchFilter]
     filterset_class=Jobfilter
-    search_fields=['title','description']
-
+    search_fields=['title','description',]
+@swagger_auto_schema(responses={200: Jobserializer(many=True)})
 
 class Jobdetailview(generics.RetrieveAPIView):
     queryset=Job.objects.all()
@@ -274,7 +276,23 @@ def reset_password(request):
         return Response({"error":"No otp configured"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class Employerreviewview(generics.CreateAPIView):
+    permission_classes=[IsAuthenticated]
+    serializer_class=Employerreviewserializer
 
-        
+    def perform_create(self, serializer):
+        user=self.request.user
+        job=serializer.validated_data['job']
+        if job.employer != user:
+            raise PermissionDenied("only employers can add review on thier own job")     
+        serializer.save(employer=user)   
+
+class Employerreviewlist(generics.ListAPIView):
+    permission_classes=[IsAuthenticated]
+    serializer_class=Employerreviewserializer
+
+    def get_queryset(self):
+        jobid=self.kwargs['job_id']
+        return Employerreview.objects.filter(job_id=jobid)
 
 # Create your views here.

@@ -23,6 +23,9 @@ from .views import (
                     Publiccompanyreviewlist,
                     Employerowncompanyreviewlist,
                     Companyreviewcreateview,
+                    Employerreviewview,
+                    Employerreviewlist
+                    
                     
 )
 
@@ -57,5 +60,7 @@ urlpatterns = [
     path('api/company/review/create/', Companyreviewcreateview.as_view(), name='company-review-create'),
     path('api/company/<int:company_id>/reviews/', Publiccompanyreviewlist.as_view(), name='company-review-list'),
     path('api/resetpassword/',reset_password,name='reset-password'),
+    path('api/employerreview/',Employerreviewview.as_view(),name='employer-reviewview'),
+    path('api/reviewview/<int:job_id>/',Employerreviewlist.as_view(),name='employerreviewview'),
     path('api/',include(router.urls))
 ]
