@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview
+from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Employerreview
 from.utils import send_notification_mail
 
 class Register(serializers.ModelSerializer):
@@ -33,6 +33,19 @@ class Jobserializer(serializers.ModelSerializer):
           model=Job
           fields='__all__'
           read_only_fields=['employer','created_at']
+
+     def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        # If either date or venue is missing, remove all interview-related fields
+        if not instance.interview_date or not instance.interview_venue:
+            rep.pop('interview_date', None)
+            rep.pop('interview_time', None)
+            rep.pop('interview_venue', None)
+            rep.pop('walkin_drive', None)
+
+        return rep
+
 
 class Applicationserializer(serializers.ModelSerializer):
      class Meta:
@@ -110,4 +123,10 @@ class Companyreviewreplyserializer(serializers.ModelSerializer):
      class Meta:
           model=Companyreview
           fields=['reply']
+class Employerreviewserializer(serializers.ModelSerializer):
+    class Meta:
+        model=Employerreview
+        fields='__all__'
+        read_only_fields=['id','employer','created_at']
+
           
