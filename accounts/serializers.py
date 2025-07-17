@@ -32,7 +32,7 @@ class Jobserializer(serializers.ModelSerializer):
      class Meta:
           model=Job
           fields='__all__'
-          read_only_fields=['employer','created_at']
+          read_only_fields=['employer','created_at','company']
 
      def to_representation(self, instance):
         rep = super().to_representation(instance)

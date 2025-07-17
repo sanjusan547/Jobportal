@@ -61,6 +61,7 @@ class Job(models.Model):
     ]
 
     employer=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    company=models.ForeignKey('Companyprofile',on_delete=models.CASCADE)
     title=models.CharField(max_length=255)
     description=models.TextField()
     jobtype=models.CharField(max_length=20,choices=JOB_TYPE_CHOICES)
@@ -120,7 +121,7 @@ class Companyprofile(models.Model):
         return self.name
     
 class Companyreview(models.Model):
-    company=models.ForeignKey('Companyprofile',on_delete=models.CASCADE,related_name='reviews')
+    company=models.ForeignKey(Companyprofile,on_delete=models.CASCADE,related_name='reviews')
     reviewer=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
     rating=models.PositiveIntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
     comment=models.TextField(blank=True,null=True)
