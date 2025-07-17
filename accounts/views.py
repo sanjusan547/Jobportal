@@ -24,7 +24,7 @@ from.filters import Jobfilter
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsEmployerOfJob
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied,ValidationError
 from django.utils import timezone
 from rest_framework.decorators import api_view,permission_classes
 from django.contrib.auth import get_user_model
@@ -91,7 +91,14 @@ class Jobviewset(viewsets.ModelViewSet):
     permission_classes=[permissions.IsAuthenticated,IsEmployer]
 
     def perform_create(self, serializer):
-        serializer.save(employer=self.request.user)
+        user=self.request.user
+        if user.role != 'employer':
+            raise PermissionDenied("only employers can post jobs")
+        try:
+            company=Companyprofile.objects.get(employer=user)
+        except Companyprofile.DoesNotExist:
+            raise ValidationError("first you need to create a company profile")
+        serializer.save(employer=user,company=company)
 
 class Joblistview(generics.ListAPIView):
     queryset=Job.objects.all()
@@ -217,6 +224,14 @@ class Publiccompanyreviewlist(generics.ListAPIView):
     def get_queryset(self):
         company_id=self.kwargs['company_id']
         return Companyreview.objects.filter(company_id=company_id)
+
+class Companyjobslist(generics.ListAPIView):
+    serializer_class=Jobserializer
+    permission_classes=[IsAuthenticated]
+
+    def get_queryset(self):
+        companyid=self.kwargs['company_id']
+        return Job.objects.filter(company_id=companyid)
     
 class Employerowncompanyreviewlist(generics.ListAPIView):
     serializer_class=Companyreviewserializer
