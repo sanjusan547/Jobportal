@@ -24,7 +24,8 @@ from .views import (
                     Employerowncompanyreviewlist,
                     Companyreviewcreateview,
                     Employerreviewview,
-                    Employerreviewlist
+                    Employerreviewlist,
+                    Companyjobslist
                     
                     
 )
@@ -59,6 +60,7 @@ urlpatterns = [
     path('api/company/my/reviews/<int:pk>/reply/', Companyreviewreplyview.as_view(), name='company-review-reply'),
     path('api/company/review/create/', Companyreviewcreateview.as_view(), name='company-review-create'),
     path('api/company/<int:company_id>/reviews/', Publiccompanyreviewlist.as_view(), name='company-review-list'),
+    path('api/company/<int:company_id>/jobs/',Companyjobslist.as_view(), name='company-job-list'),
     path('api/resetpassword/',reset_password,name='reset-password'),
     path('api/employerreview/',Employerreviewview.as_view(),name='employer-reviewview'),
     path('api/reviewview/<int:job_id>/',Employerreviewlist.as_view(),name='employerreviewview'),
