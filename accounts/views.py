@@ -23,8 +23,8 @@ from rest_framework import viewsets,permissions,generics,filters
 from.filters import Jobfilter
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsEmployerOfJob
-from rest_framework.exceptions import PermissionDenied,ValidationError
+from .permissions import IsEmployerOfJob,IsEmployerUser
+from rest_framework.exceptions import PermissionDenied,ValidationError,NotFound
 from django.utils import timezone
 from rest_framework.decorators import api_view,permission_classes
 from django.contrib.auth import get_user_model
@@ -70,6 +70,11 @@ class Jobseekerviewset(viewsets.ModelViewSet):
     serializer_class=Jobseekerserializer
     permission_classes=[IsAuthenticated]
 
+    def get_queryset(self):
+        # Only return the logged-in user's profile
+        return Jobseekerprofile.objects.filter(user=self.request.user)
+
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -77,11 +82,14 @@ class Jobseekerviewset(viewsets.ModelViewSet):
 class Employerviewset(viewsets.ModelViewSet):
     queryset=Employerprofile.objects.all()
     serializer_class=Employerserializer
-    permission_classes=[IsAuthenticated]
+    permission_classes=[IsAuthenticated,IsEmployerUser]
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def get_queryset(self):
+        # Only return the logged-in user's profile
+        return Employerprofile.objects.filter(user=self.request.user)
 class IsEmployer(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.role == 'employer'
