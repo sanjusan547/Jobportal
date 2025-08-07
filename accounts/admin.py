@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User,Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,Employerreview
+from .models import User,Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,Employerreview,Userfollow
 from django import forms
 from django.core.exceptions import ValidationError
 from accounts.models import User 
@@ -59,5 +59,6 @@ admin.site.register(Companyprofile,CompanyprofileAdmin)
 admin.site.register(Companyreview)
 admin.site.register(Globalotp)
 admin.site.register(Employerreview)
+admin.site.register(Userfollow)
 
 

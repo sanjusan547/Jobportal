@@ -25,7 +25,12 @@ from .views import (
                     Companyreviewcreateview,
                     Employerreviewview,
                     Employerreviewlist,
-                    Companyjobslist
+                    Companyjobslist,
+                    Userfollowview,
+                    Userunfollowview,
+                    Followerslist,
+                    Followinglist
+                    
                     
                     
 )
@@ -64,5 +69,9 @@ urlpatterns = [
     path('api/resetpassword/',reset_password,name='reset-password'),
     path('api/employerreview/',Employerreviewview.as_view(),name='employer-reviewview'),
     path('api/reviewview/<int:job_id>/',Employerreviewlist.as_view(),name='employerreviewview'),
+    path('api/users/<int:user_id>/follow/',Userfollowview.as_view(),name='follow-user'),
+    path('api/users/<int:user_id>/unfollow/',Userunfollowview.as_view(),name='unfollow-user'),
+    path('api/myfollowing/',Followinglist.as_view(),name='following-list'),
+    path('api/myfollowers/',Followerslist.as_view(),name='follower-list'),
     path('api/',include(router.urls))
 ]

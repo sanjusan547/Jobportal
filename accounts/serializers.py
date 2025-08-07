@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Employerreview
+from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Employerreview,Userfollow
 from.utils import send_notification_mail
 
 class Register(serializers.ModelSerializer):
@@ -129,4 +129,8 @@ class Employerreviewserializer(serializers.ModelSerializer):
         fields='__all__'
         read_only_fields=['id','employer','created_at']
 
-          
+class Userfollowserializer(serializers.ModelSerializer):
+    class Meta:
+        model=Userfollow
+        fields=['id','follower','following','followed_at']
+        read_only_fields=['id','followed_at']

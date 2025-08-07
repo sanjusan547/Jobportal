@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken,TokenError
 from rest_framework import status
-from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,User,Employerreview
+from .models import Jobseekerprofile,Employerprofile,Job,Application,Savedjob,Companyprofile,Companyreview,Globalotp,User,Employerreview,Userfollow
 from .serializers import(
      Jobseekerserializer,
      Employerserializer,
@@ -17,7 +17,8 @@ from .serializers import(
      Companyprofileserializer,
      Companyreviewserializer,
      Companyreviewreplyserializer,
-     Employerreviewserializer
+     Employerreviewserializer,
+     Userfollowserializer
 )
 from rest_framework import viewsets,permissions,generics,filters
 from.filters import Jobfilter
@@ -32,8 +33,6 @@ from django.contrib.auth.hashers import make_password
 from datetime import timedelta
 from .utils import send_notification_mail
 from drf_yasg.utils import swagger_auto_schema
-
-
 
 
 
@@ -270,7 +269,7 @@ class Companyreviewreplyview(generics.UpdateAPIView):
             raise PermissionDenied("You can only reply to reviews on your own company")
         serializer.save(reply_at=timezone.now())
 
-user= get_user_model
+user= get_user_model()
 @api_view(['POST'])
 @permission_classes([])
 
@@ -318,4 +317,51 @@ class Employerreviewlist(generics.ListAPIView):
         jobid=self.kwargs['job_id']
         return Employerreview.objects.filter(job_id=jobid)
 
-# Create your views here.
+
+class Userfollowview(generics.CreateAPIView):
+    permission_classes=[IsAuthenticated]
+    serializer_class=Userfollowserializer
+
+    def post(self, request, *args, **kwargs):
+        user_follow_id=self.kwargs['user_id']
+        user=self.request.user
+
+        if user.id==user_follow_id:
+            return Response({"detail":"you cannot follow your same account"},status=status.HTTP_400_BAD_REQUEST)
+        if Userfollow.objects.filter(follower=user,following_id=user_follow_id).exists():
+            return Response({"detail":"you already followed this account"},status=status.HTTP_400_BAD_REQUEST)
+        
+        Userfollow.objects.create(follower=user,following_id=user_follow_id)
+        return Response({"detail":"now following the user"},status=status.HTTP_201_CREATED)
+    
+class Userunfollowview(generics.DestroyAPIView):
+    permission_classes=[IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user_unfollow_id=self.kwargs['user_id']
+        current_user=self.request.user.id
+
+        try:
+            follow=Userfollow.objects.get(follower_id=current_user,following_id=user_unfollow_id)
+            follow.delete()
+            return Response({"detail":"unfollowed the user"},status=status.HTTP_204_NO_CONTENT)
+        except Userfollow.DoesNotExist:
+            return Response({"detail":"you not following the user"},status=status.HTTP_400_BAD_REQUEST)
+        
+class Followinglist(generics.ListAPIView):
+    serializer_class=Userfollowserializer
+    permission_classes=[IsAuthenticated]
+
+
+    def get_queryset(self):
+        user_id=self.request.user.id
+        return Userfollow.objects.filter(follower_id=user_id)
+
+class Followerslist(generics.ListAPIView):
+    serializer_class=Userfollowserializer
+    permission_classes=[IsAuthenticated]
+
+
+    def get_queryset(self):
+        user_id=self.request.user.id
+        return Userfollow.objects.filter(following_id=user_id)
