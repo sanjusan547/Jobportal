@@ -19,7 +19,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     email=models.EmailField(unique=True)
     fullname=models.CharField(max_length=100)
-    phonenumber=models.CharField(max_length=100,null=True)
+    phonenumber=models.CharField(max_length=100,null=True,blank=True)
     role=models.CharField(max_length=10,choices=ROLE_CHOICES,default="")
     is_verified=models.BooleanField(default=False)
 
@@ -38,8 +38,9 @@ class Jobseekerprofile(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
     resume=models.FileField(upload_to='resumes/',blank=True,null=True)
     skills=models.TextField(blank=True)
-    education=models.TextField
+    education=models.TextField(blank=True)
     experience=models.CharField(max_length=225,blank=True,null=True)
+    phone_number=models.CharField(blank=True,null=True)
 
     def __str__(self):
         return f"jobseeker:{self.user.email}"
@@ -48,6 +49,8 @@ class Employerprofile(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
     companyname=models.CharField(max_length=225)
     website=models.URLField(blank=True,null=True)
+    phone_number=models.CharField(blank=True,null=True)
+
 
     def __str__(self):
         return f"Employer:{self.user.email}"
